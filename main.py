@@ -48,6 +48,8 @@ def handle_suggestive_conversation(user_input):
     Provide practical, positive, and human-like advice.
     Keep the tone cheerful and encouraging.
 
+    Give concise, actionable replies.
+
     User: {user_input}
     """
     # print("Suggestive Conversation") # Debugging line
@@ -60,6 +62,8 @@ def handle_discussive_conversation(user_input):
     Respond in a conversational, insightful way — ask follow-up questions,
     show empathy, and keep it natural.
 
+    Give crisp, well-reasoned replies.
+
     User: {user_input}
     """
     # print("Discussive Conversation") # Debugging line
@@ -71,6 +75,8 @@ def handle_humorous_conversation(user_input):
     The user wants humor.
     Respond with light, positive humor and a pinch of Gen Z/Bangalore slang,
     but remain respectful and empathetic.
+    
+    Give short, snappy replies.
 
     User: {user_input}
     """
