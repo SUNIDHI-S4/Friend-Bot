@@ -1,27 +1,179 @@
+# from google import genai
+# from google.genai import types
+# from dotenv import load_dotenv
+# import os
+# import json
+
+# load_dotenv()
+# api_key = os.getenv("GEMINI_API_KEY")
+
+# client = genai.Client(api_key=api_key)
+
+# # prompt = '''
+
+# # '''
+
+# # response = client.models.generate_content(
+# #     model="gemini-2.5-flash",
+# #     contents= prompt,
+# #     config= types.GenerationConfig(
+# #         system_instructions="You are a supportive, companion, friendly AI.",
+# #     )
+# # )
+
+# # print(response.text)
+
+# def classify_message(user_input):
+#     classification_prompt = f"""
+#     Classify the following user input into one of the categories:
+#     - Suggestive (user wants tips, recommendations, or advice)
+#     - Discussive (user wants a thoughtful discussion)
+#     - Humorous (user wants a witty or playful response)
+#     - Help (user seems distressed, seeking emergency or professional help)
+
+#     Only return one word: Suggestive, Discussive, Humorous, or Help.
+
+#     User input: "{user_input}"
+#     """
+#     response = client.models.generate_content(
+#         model="gemini-2.5-pro",
+#         contents=classification_prompt
+#     )
+#     return response.text.lower().strip()
+
+# def handle_suggestive_conversation(user_input):
+#     prompt = f"""
+#     You are a supportive, helpful, and empathetic AI companion.
+#     The user is asking for suggestions or tips.
+#     Provide practical, positive, and human-like advice.
+#     Keep the tone cheerful and encouraging.
+
+#     Give concise, actionable replies.
+
+#     User: {user_input}
+#     """
+#     # print("Suggestive Conversation") # Debugging line
+#     return generate_ai_response(prompt)
+
+# def handle_discussive_conversation(user_input):
+#     prompt = f"""
+#     You are a thoughtful, engaging, and curious AI companion.
+#     The user wants a discussion.
+#     Respond in a conversational, insightful way — ask follow-up questions,
+#     show empathy, and keep it natural.
+
+#     Give crisp, well-reasoned replies.
+
+#     User: {user_input}
+#     """
+#     # print("Discussive Conversation") # Debugging line
+#     return generate_ai_response(prompt)
+
+# def handle_humorous_conversation(user_input):
+#     prompt = f"""
+#     You are a witty, kind, and playful AI companion.
+#     The user wants humor.
+#     Respond with light, positive humor and a pinch of Gen Z/Bangalore slang,
+#     but remain respectful and empathetic.
+
+#     Give short, snappy replies.
+
+#     User: {user_input}
+#     """
+#     # print("Humorous Conversation") # Debugging line
+#     return generate_ai_response(prompt)
+
+# def handle_help_conversation(user_input):
+#     prompt = f"""
+#     The user may be in distress or needs real help.
+#     Respond kindly and empathetically.
+#     Provide relevant helplines or professional resources from the internet.
+#     DO NOT give medical or legal advice yourself.
+#     """
+#     # Optionally call your web scraping / API logic to get helpline info
+#     # print("Helpline Conversation") # Debugging line
+#     return generate_ai_response(prompt)
+
+
+# def generate_ai_response(prompt):
+#     response = client.models.generate_content(
+#         model="gemini-2.5-pro",
+#         contents=prompt
+#     )
+#     return response.text.strip()
+
+
+# def chatbot_reply(user_input):
+#     print("Categorizing user input...") # Debugging line
+#     category = classify_message(user_input)
+#     print(f"Category: {category}") # Debugging line
+    
+#     if category == "suggestive":
+#         return handle_suggestive_conversation(user_input)
+#     elif category == "discussive":
+#         return handle_discussive_conversation(user_input)
+#     elif category == "humorous":
+#         return handle_humorous_conversation(user_input)
+#     elif category == "help":
+#         return handle_help_conversation(user_input)
+#     else:
+#         return "I'm here for you 😊 Could you tell me more?"
+
+# user_input = input("You: ")
+# reply = chatbot_reply(user_input)
+# print("Bot:", reply)
+
+import os
+import json
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
-import os
-import json
 
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
 client = genai.Client(api_key=api_key)
 
-# prompt = '''
+CONVO_FILE = "conversations.json"
 
-# '''
+# -----------------------
+# Conversation Utilities
+# -----------------------
+def load_conversations():
+    if os.path.exists(CONVO_FILE):
+        try :
+            with open(CONVO_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            return []
+    return []
 
-# response = client.models.generate_content(
-#     model="gemini-2.5-flash",
-#     contents= prompt,
-#     config= types.GenerationConfig(
-#         system_instructions="You are a supportive, companion, friendly AI.",
-#     )
-# )
+def save_conversations(conversations):
+    with open(CONVO_FILE, "w", encoding="utf-8") as f:
+        json.dump(conversations, f, indent=4)
 
-# print(response.text)
+def add_to_conversation(role, message):
+    conversations = load_conversations()
+    conversations.append({"role": role, "message": message})
+    save_conversations(conversations)
+
+def get_recent_context(category):
+    conversations = load_conversations()
+    if category == "discussive":
+        limit = 10
+    elif category == "suggestive":
+        limit = 6
+    elif category == "humorous":
+        limit = 3
+    else:
+        limit = 0  # Help mode does not use history
+
+    if limit > 0:
+        recent = conversations[-limit:]
+        context = "\n".join([f"{c['role'].capitalize()}: {c['message']}" for c in recent])
+        return context
+    return ""
+# -----------------------
 
 def classify_message(user_input):
     classification_prompt = f"""
@@ -41,7 +193,15 @@ def classify_message(user_input):
     )
     return response.text.lower().strip()
 
+def generate_ai_response(prompt):
+    response = client.models.generate_content(
+        model="gemini-2.5-pro",
+        contents=prompt
+    )
+    return response.text.strip()
+
 def handle_suggestive_conversation(user_input):
+    context = get_recent_context("suggestive")
     prompt = f"""
     You are a supportive, helpful, and empathetic AI companion.
     The user is asking for suggestions or tips.
@@ -50,37 +210,45 @@ def handle_suggestive_conversation(user_input):
 
     Give concise, actionable replies.
 
+    Conversation history:
+    {context}
+
     User: {user_input}
     """
-    # print("Suggestive Conversation") # Debugging line
     return generate_ai_response(prompt)
 
 def handle_discussive_conversation(user_input):
+    context = get_recent_context("discussive")
     prompt = f"""
     You are a thoughtful, engaging, and curious AI companion.
     The user wants a discussion.
     Respond in a conversational, insightful way — ask follow-up questions,
     show empathy, and keep it natural.
-
+    
     Give crisp, well-reasoned replies.
+
+    Conversation history:
+    {context}
 
     User: {user_input}
     """
-    # print("Discussive Conversation") # Debugging line
     return generate_ai_response(prompt)
 
 def handle_humorous_conversation(user_input):
+    context = get_recent_context("humorous")
     prompt = f"""
     You are a witty, kind, and playful AI companion.
     The user wants humor.
     Respond with light, positive humor and a pinch of Gen Z/Bangalore slang,
     but remain respectful and empathetic.
-    
+
     Give short, snappy replies.
+
+    Conversation history:
+    {context}
 
     User: {user_input}
     """
-    # print("Humorous Conversation") # Debugging line
     return generate_ai_response(prompt)
 
 def handle_help_conversation(user_input):
@@ -90,35 +258,35 @@ def handle_help_conversation(user_input):
     Provide relevant helplines or professional resources from the internet.
     DO NOT give medical or legal advice yourself.
     """
-    # Optionally call your web scraping / API logic to get helpline info
-    # print("Helpline Conversation") # Debugging line
     return generate_ai_response(prompt)
 
-
-def generate_ai_response(prompt):
-    response = client.models.generate_content(
-        model="gemini-2.5-pro",
-        contents=prompt
-    )
-    return response.text.strip()
-
-
 def chatbot_reply(user_input):
-    print("Categorizing user input...") # Debugging line
+    print("Categorizing user input...")
     category = classify_message(user_input)
-    print(f"Category: {category}") # Debugging line
-    
-    if category == "suggestive":
-        return handle_suggestive_conversation(user_input)
-    elif category == "discussive":
-        return handle_discussive_conversation(user_input)
-    elif category == "humorous":
-        return handle_humorous_conversation(user_input)
-    elif category == "help":
-        return handle_help_conversation(user_input)
-    else:
-        return "I'm here for you 😊 Could you tell me more?"
+    print(f"Category: {category}")
 
-user_input = input("You: ")
-reply = chatbot_reply(user_input)
-print("Bot:", reply)
+    if category == "suggestive":
+        reply = handle_suggestive_conversation(user_input)
+    elif category == "discussive":
+        reply = handle_discussive_conversation(user_input)
+    elif category == "humorous":
+        reply = handle_humorous_conversation(user_input)
+    elif category == "help":
+        reply = handle_help_conversation(user_input)
+    else:
+        reply = "I'm here for you 😊 Could you tell me more?"
+
+    # Store conversation
+    add_to_conversation("user", user_input)
+    add_to_conversation("bot", reply)
+
+    return reply
+
+# Run
+if __name__ == "__main__":
+    while True:
+        user_input = input("You: ")
+        if user_input.lower() in ["exit", "quit"]:
+            break
+        reply = chatbot_reply(user_input)
+        print("Bot:", reply)
