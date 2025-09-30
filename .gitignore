@@ -4,5 +4,7 @@ venv/
 # Environment Variables
 .env
 
-# Conversation History
+# Conversation History, Users and their  interests
 conversations.json
+users.json
+interest.json
