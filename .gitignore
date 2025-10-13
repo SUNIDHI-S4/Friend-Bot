@@ -5,7 +5,7 @@ __pycache__/
 # Environment Variables
 .env
 
-# Conversation History, Users and their  interests
+# Conversation History, Users and their interests
 conversations.json
 users.json
-interest.json
+interests.json
