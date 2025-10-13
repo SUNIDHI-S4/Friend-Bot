@@ -157,7 +157,7 @@ def add_to_conversation(role, message):
     conversations.append({"role": role, "message": message})
     save_conversations(conversations)
 
-def get_recent_context(category):
+def get_recent_history(category):
     conversations = load_conversations()
     if category == "discussive":
         limit = 10
@@ -170,8 +170,8 @@ def get_recent_context(category):
 
     if limit > 0:
         recent = conversations[-limit:]
-        context = "\n".join([f"{c['role'].capitalize()}: {c['message']}" for c in recent])
-        return context
+        history = "\n".join([f"{c['role'].capitalize()}: {c['message']}" for c in recent])
+        return history
     return ""
 # -----------------------
 
@@ -201,7 +201,7 @@ def generate_ai_response(prompt):
     return response.text.strip()
 
 def handle_suggestive_conversation(user_input):
-    context = get_recent_context("suggestive")
+    history = get_recent_history("suggestive")
     prompt = f"""
     You are a supportive, helpful, and empathetic AI companion.
     The user is asking for suggestions or tips.
@@ -211,14 +211,14 @@ def handle_suggestive_conversation(user_input):
     Give concise, actionable replies.
 
     Conversation history:
-    {context}
+    {history}
 
     User: {user_input}
     """
     return generate_ai_response(prompt)
 
 def handle_discussive_conversation(user_input):
-    context = get_recent_context("discussive")
+    history = get_recent_history("discussive")
     prompt = f"""
     You are a thoughtful, engaging, and curious AI companion.
     The user wants a discussion.
@@ -228,14 +228,15 @@ def handle_discussive_conversation(user_input):
     Give crisp, well-reasoned replies.
 
     Conversation history:
-    {context}
+    {history}
 
     User: {user_input}
     """
     return generate_ai_response(prompt)
 
 def handle_humorous_conversation(user_input):
-    context = get_recent_context("humorous")
+    history = get_recent_history("humorous")
+    
     prompt = f"""
     You are a witty, kind, and playful AI companion.
     The user wants humor.
@@ -245,7 +246,7 @@ def handle_humorous_conversation(user_input):
     Give short, snappy replies.
 
     Conversation history:
-    {context}
+    {history}
 
     User: {user_input}
     """
@@ -281,6 +282,57 @@ def chatbot_reply(user_input):
     add_to_conversation("bot", reply)
 
     return reply
+
+# signup
+def signup(name, username, password, nickname, gmail, interests):
+    # Load or initialize files
+    if os.path.exists("users.json"):
+        with open("users.json", "r") as f:
+            users = json.load(f)
+    else:
+        users = {}
+
+    if os.path.exists("interests.json"):
+        with open("interests.json", "r") as f:
+            interests_data = json.load(f)
+    else:
+        interests_data = {}
+
+    # Add user data
+    users[username] = {
+        "name": name,
+        "password": password,   # 🔒 (You should hash this later)
+        "nickname": nickname,
+        "gmail": gmail
+    }
+
+    interests_data[username] = interests
+
+    # Save back
+    with open("users.json", "w") as f:
+        json.dump(users, f, indent=4)
+    with open("interests.json", "w") as f:
+        json.dump(interests_data, f, indent=4)
+
+    return f"User {username} registered successfully!"
+
+# signin
+def signin(username, password):
+    with open("users.json", "r") as f:
+        users = json.load(f)
+
+    if username in users and users[username]["password"] == password:
+        return True, f"Welcome back {users[username]['nickname']}!"
+    else:
+        return False, "Invalid username or password."
+
+# fetch interests
+def get_user_interests(username):
+    with open("interests.json", "r") as f:
+        interests_data = json.load(f)
+
+    return interests_data.get(username, [])
+
 
 # Run
 if __name__ == "__main__":
