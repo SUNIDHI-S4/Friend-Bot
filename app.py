@@ -67,6 +67,8 @@ def get_recent_history(category):
         limit = 6
     elif category == "humorous":
         limit = 3
+    elif category == "classify":
+        limit = 5
     else:
         limit = 0
 
@@ -75,13 +77,19 @@ def get_recent_history(category):
         return "\n".join([f"{c['role'].capitalize()}: {c['message']}" for c in recent])
     return ""
 
-def classify_message(user_input):
+def classify_message(user_input, username):
+    history = get_recent_history("classify")
+    interests = get_user_interests(username)
     prompt = f"""
     Classify the following user input into one of the categories:
     - Suggestive (user wants tips, recommendations, or advice)
     - Discussive (user wants a thoughtful discussion)
     - Humorous (user wants a witty or playful response)
     - Help (user seems distressed, seeking emergency or professional help)
+
+    user interests: {', '.join(interests) if interests else 'None'}
+    Conversation history:
+    {history}
 
     User input: "{user_input}"
     """
@@ -163,12 +171,12 @@ def handle_help_conversation(user_input):
     The user may be in distress or needs real help.
     Respond kindly and empathetically.
     Provide relevant helplines or professional resources from the internet.
-    DO NOT give medical or legal advice yourself.c
+    DO NOT give medical or legal advice yourself.
     """
     return generate_ai_response(prompt)
 
 def chatbot_reply(user_input, username):
-    category = classify_message(user_input)
+    category = classify_message(user_input, username)
     if category == "suggestive":
         reply = handle_suggestive_conversation(user_input, username)
     elif category == "discussive":
