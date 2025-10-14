@@ -57,11 +57,11 @@ def save_user(username, data):
     with open(user_file(username), "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-def generate(prompt):
+def generate(prompt, model="gemini-2.5-flash"):
     if not client:
         return "(Gemini not configured)"
     try:
-        res = client.models.generate_content(model="gemini-2.5-pro", contents=prompt)
+        res = client.models.generate_content(model=model, contents=prompt)
         return res.text.strip()
     except Exception as e:
         return f"(Error: {str(e)})"
@@ -113,7 +113,7 @@ def classify_message(user_input, username):
 
     Input: "{user_input}"
     """
-    raw = generate(prompt)
+    raw = generate(prompt, "gemini-2.5-flash")
     for label in ["suggestive", "discussive", "humorous", "help"]:
         if label in raw.lower():
             return label
@@ -129,6 +129,7 @@ def handle_suggestive(user_input, username):
     You are a supportive and helpful AI companion.
     The user is asking for suggestions or advice.
     Provide concise, encouraging, and friendly tips.
+    Give concise, actionable replies.
 
     User Info:
     Nickname: {profile['nickname']}
@@ -154,6 +155,7 @@ def handle_discussive(user_input, username):
     You are a thoughtful, empathetic, and engaging AI companion.
     Respond naturally, showing curiosity and emotional depth.
     Ask gentle follow-up questions occasionally.
+    Give crisp, well-reasoned replies.
 
     User Info:
     Nickname: {profile['nickname']}
@@ -168,7 +170,7 @@ def handle_discussive(user_input, username):
 
     User: {user_input}
     """
-    return generate(prompt)
+    return generate(prompt, "gemini-2.5-flash")
 
 def handle_humorous(user_input, username):
     user = load_user(username)
@@ -179,6 +181,7 @@ def handle_humorous(user_input, username):
     You are a witty, kind, and Bangalorean-style humorous AI companion.
     Use light, fun humor with Gen Z slang.
     Keep it positive and respectful.
+    Give short, snappy replies.
 
     Nickname: {profile['nickname']}
     Interests: {', '.join(profile['interests'])}
@@ -198,6 +201,7 @@ def handle_help(user_input, username):
     Respond empathetically and kindly.
     Offer contact details of professional helplines.
     Do not give medical or legal advice yourself.
+    Keep it short and supportive.
 
     Nickname: {profile['nickname']}
     User message: {user_input}
