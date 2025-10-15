@@ -11,5 +11,8 @@ users.json
 interests.json
 conversations/
 database/
+
+# Other files
 prompts.txt
 bot_profile_detail.json
+~WRL3236.tmp
