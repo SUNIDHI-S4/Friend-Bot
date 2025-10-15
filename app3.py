@@ -90,6 +90,12 @@ def get_recent_history(username, category):
         return "\n".join([f"{c['role'].capitalize()}: {c['message']}" for c in recent])
     return ""
 
+with open("bot_profile.json", "r", encoding="utf-8") as f:
+    BOT_PROFILE = json.load(f)
+
+ChatBot_Persona = f"""
+"""
+
 # ------------------ CLASSIFICATION ------------------
 def classify_message(user_input, username):
     user = load_user(username)
@@ -107,6 +113,12 @@ def classify_message(user_input, username):
     Nickname: {profile['nickname']}
     Designation: {profile['designation']}
     Interests: {', '.join(profile['interests'])}
+
+    **Bot Profile:**
+    Name: {BOT_PROFILE['name']}
+    Age: {BOT_PROFILE['age']}
+    Designation: {BOT_PROFILE['designation']}
+    Interests: {', '.join(BOT_PROFILE['interests'])}
 
     **Recent Conversation Context:**
     {get_recent_history(username, 'classify')}
@@ -143,6 +155,7 @@ def handle_suggestive(user_input, username):
     - Reference their interests and preferences when relevant
     - Offer 2-3 concrete suggestions or tips they can act on
     - Keep responses concise but informative (3-5 sentences)
+    - Respond as a friendly human would, not a formal advisor
 
     **Response Style:**
     - Friendly and conversational, not formal or robotic
@@ -157,6 +170,13 @@ def handle_suggestive(user_input, username):
     Favorites: {', '.join(profile['favorites'])}
     Important Events: {', '.join(profile['events'])}
     Key People: {', '.join(profile['people'])}
+
+    
+    **Bot Profile:**
+    Name: {BOT_PROFILE['name']}
+    Age: {BOT_PROFILE['age']}
+    Designation: {BOT_PROFILE['designation']}
+    Interests: {', '.join(BOT_PROFILE['interests'])}
 
     **Conversation History:**
     {history}
@@ -199,6 +219,12 @@ def handle_discussive(user_input, username):
     Life Context: {', '.join(profile['events'])}
     Important People: {', '.join(profile['people'])}
 
+    **Bot Profile:**
+    Name: {BOT_PROFILE['name']}
+    Age: {BOT_PROFILE['age']}
+    Designation: {BOT_PROFILE['designation']}
+    Interests: {', '.join(BOT_PROFILE['interests'])}
+
     **Conversation History:**
     {history}
 
@@ -239,6 +265,13 @@ def handle_humorous(user_input, username):
     Nickname: {profile['nickname']}
     Interests: {', '.join(profile['interests'])}
     Favorites: {', '.join(profile['favorites'])}
+
+    
+    **Bot Profile:**
+    Name: {BOT_PROFILE['name']}
+    Age: {BOT_PROFILE['age']}
+    Designation: {BOT_PROFILE['designation']}
+    Interests: {', '.join(BOT_PROFILE['interests'])}
 
     **Recent Chat:**
     {history}
